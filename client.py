@@ -2,6 +2,9 @@ from context_task import TaskContext
 from interface_data import DataLoadFactory
 from interface_transformation import TransformationFactory
 
+
+
+
 data_load_json = '{ "source_db" : "details_to_db" , "query": "select * from table"}'
 data_load_csv = '{ "file" : "input.csv" , "query": "select * from input"}'
 
