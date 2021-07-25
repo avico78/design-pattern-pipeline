@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 
-
 class TaskContext():
 
     "This is the object whose behavior will change"
