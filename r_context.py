@@ -1,11 +1,12 @@
 from enum import Enum
 from typing import Dict
-# from interface_data import DataLoadFactory
-# from interface_transformation import  DataTransformationFactory
+
 
 class TaskType(str, Enum):
     LOAD = "Load"
     TRANSFORM = "Transform"
+
+
 
 
 
@@ -14,17 +15,14 @@ class TaskFactory:
 
 
 class DataLoadFactory(TaskFactory):
-
     "The DataLoad Factory Class"
-    
 
 
 class DataTransformationFactory(TaskFactory):
     "The DataLoad Factory Class"
 
 
-class TaskContext():
-
+class TaskContext:
     available_factories = {
         TaskType.LOAD: DataLoadFactory,
         TaskType.TRANSFORM: DataTransformationFactory
@@ -32,10 +30,9 @@ class TaskContext():
 
     @staticmethod
     def get_context(config: Dict) -> TaskFactory:
-        print(config)
-        task_type = config['operation']
+        task_type = config.get('operation')
         print(task_type)
         factory = TaskContext.available_factories.get(task_type)
         if factory is None:
-             raise ValueError(f"No factory for task type: {task_type}")
+            raise ValueError(f"No factory for task type: {task_type}")
         return factory()

@@ -36,7 +36,7 @@ class Transoform_data_2(ITransformation):
         self._data = "data return from transoform_data_2"
         return {"data" : self._data   }
 
-class TransformationFactory:  
+class DataTransformationFactory:  
     "The Transformation Factory Class"
 
     @staticmethod
