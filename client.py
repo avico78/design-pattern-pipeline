@@ -10,3 +10,5 @@ configs =  {'operation': TaskType.LOAD,
 dataload_context = TaskContext()
 data_load_factory = dataload_context.get_context(configs)
 print(type(data_load_factory))
+
+#v1
