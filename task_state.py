@@ -48,3 +48,5 @@ class Failed(TaskState):
    name = "failed"
    allowed = ['started']
 
+
+a = TaskState()
