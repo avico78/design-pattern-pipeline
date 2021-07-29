@@ -24,42 +24,46 @@ class TaskType(str, Enum):
 
 
 class TaskFactory(ABC):
-    @property                 
-    def construct_task(self):     
-        return self._task
 
-    @construct_task.setter
-    def construct_task(self,config: Dict) -> "Task":
-        print("Here", config.get('task'))
+    def __init__(self, config: Dict):
+        self.task = config.get('task')
+        self.last_name = config.get('task_params')
 
-    @property                 
-    def task_state(self):     
+    @abstractmethod
+    def execute_task(self):
         pass
 
-    #    return self._task
-        # if food in self.diet:
-        #     self._food = food
-        # else:
-        #     raise ValueError(f"You can't feed this animal with {food}.")
-    # @staticmethod
+    #    return getattr(DayaframeTransformation, self.task)(self.task_params)
+       # return f"{self.first_name} {self.last_name}"
+
+    @abstractmethod
+    def get_task(self):
+        pass
+ 
     # @abstractmethod
     # def construct_task(self,config: Dict) -> "Task":
-    #     pass
+    #     self.task = config.get('task')
 
 
-
-    def run_task(task: Callable) :
-        pass
 
 
 class DataLoadFactory(TaskFactory):
 
     "The DataLoad Factory Class"
-    
-            
-    def task_state(self):
-        return self.currstate
 
+    def __init__(self, config: Dict):
+        self.task = config.get('task')
+        self.task_params = config.get('task_params')
+
+    def get_task(self):
+        return self.task
+
+    def execute_task(self) -> Callable :
+        return getattr(DayaframeTransformation, self.task)(self.task_params)
+
+
+        #return f"Task {config.get('task')}"
+        
     # def __init__(self, execution_step: Callable, depends_on: "Task" = None,
     #              **kwargs) -> None:
     #     self.depends_on = depends_on
@@ -75,10 +79,7 @@ class DataLoadFactory(TaskFactory):
     #     # print("selee", task_state)
         
 
-    def run_task(task: Callable) :
-        return getattr(DayaframeTransformation, task)(config.get('params'))
-        #return f"Task {config.get('task')}"
-        
+ 
 
 
 class DataTransformationFactory(TaskFactory):
@@ -98,7 +99,7 @@ class TaskContext:
         factory = TaskContext.available_factories.get(task_type)
         if factory is None:
             raise ValueError(f"No factory for task type: {task_type}")
-        return factory.construct_task(config)
+        return factory(config)
 
 
 
@@ -118,3 +119,29 @@ class TaskContext:
 #         if factory is None:
 #              raise ValueError(f"No factory for task type: {task_type}")
 #         return factory()
+
+   
+
+
+    # @abstractmethod
+    # def do_something(self):
+    #     pass
+
+    # @property                 
+    # def construct_task(self):     
+    #     return self._task
+
+    # @construct_task.setter
+    # def construct_task(self,config: Dict) -> str:
+    #     print("Here", config.get('task'))
+
+    # @property                 
+    # def task_state(self):     
+    #     pass
+
+    #    return self._task
+        # if food in self.diet:
+        #     self._food = food
+        # else:
+        #     raise ValueError(f"You can't feed this animal with {food}.")
+    # @staticmethod
