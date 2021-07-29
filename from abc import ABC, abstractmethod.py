@@ -1,6 +1,12 @@
 from abc import ABC, abstractmethod
 
 class Animal(ABC):
+
+
+    def food_eated_apply (self, food):
+        self.food_eaten = 
+
+
     @property                 
     def food_eaten(self):     
         return self._food
@@ -11,7 +17,6 @@ class Animal(ABC):
             self._food = food
         else:
             raise ValueError(f"You can't feed this animal with {food}.")
-
     @property
     @abstractmethod
     def diet(self):
