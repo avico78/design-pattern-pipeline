@@ -6,9 +6,6 @@ import time
 
 from task_state import NA, TaskState
 import itertools
-
-# from interface_data import DataLoadFactory
-# from interface_transformation import  DataTransformationFactory
 from abc import ABC, abstractmethod,abstractproperty
 
 from transformations.dataframe_transformations import DayaframeTransformation
@@ -38,12 +35,6 @@ class TaskFactory(ABC):
         pass
 
 
-    # @abstractmethod
-    # def execute_task(self):
-    #     pass
-
-
-
 class DataLoadFactory(TaskFactory,TaskState):
 
     "The DataLoad Factory Class"
@@ -51,7 +42,7 @@ class DataLoadFactory(TaskFactory,TaskState):
 
     def __init__(self, config: Dict):
         self.task = config.get('task')
-        self.task_id = next(DataLoadFactory.newid)
+        self.task_id = next(DataLoadFactory.newid) 
         self.depends_on = config.get('depends_on')
         self.task_params = config.get('task_params')
         self.task_state = NA()
@@ -78,9 +69,6 @@ class DataLoadFactory(TaskFactory,TaskState):
 
 class DataTransformationFactory(TaskFactory):
     "The DataLoad Factory Class"
-
-
-
  
 
 
@@ -97,7 +85,7 @@ class Workflow:
         return [task.get_task() for task in self.tasks]
 
     def execute_task(self, task):
-        # if this task also depended
+        
         if task.depends_on :
             # check requied tasks
             self.required_task(task)
@@ -113,7 +101,7 @@ class Workflow:
     
 
     def required_task(self,task):
-        # loop through all requied (parent) task ONLY for those which thier state remain na (wasn't executed)
+        # loop through all requied (parent) task ONLY for those which wasn't executed (na)
         for required_task_id in (required_task_id for required_task_id in task.depends_on
                                            if self.tasks[required_task_id].get_state() == 'na'):
             return self.tasks[required_task_id]
