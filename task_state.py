@@ -21,7 +21,7 @@ class NA(TaskState):
 
 class Started(TaskState):
    name = "started"
-   allowed = ['stop']
+   allowed = ['stop','completed']
 
 class Running(TaskState):
    """ State of being running """
@@ -38,6 +38,10 @@ class Canceled(TaskState):
    name = "canceled"
    allowed = ['Resume']
 
+class Completed(TaskState):
+   """ State of being running """
+   name = "completed"
+   allowed = []
 class Resume(TaskState):
    """ State of being running """
    name = "canceled"
@@ -48,5 +52,3 @@ class Failed(TaskState):
    name = "failed"
    allowed = ['started']
 
-
-a = TaskState()

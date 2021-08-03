@@ -3,16 +3,22 @@ from context_task import TaskType,TaskContext,Workflow
 #from interface_transformation import DataTransformationFactory
 
 configs = [ {'operation': TaskType.LOAD,
-     "task" : "some_dict",
+     "task" : "uppercase",
+     "depends_on": [1],
      "source": "csv",
-     "task_seq": 1,
-     "task_params": {"path": "aaa/to/csv1"}
+     "task_params": {"key": "from_task_1"}
      },
      {'operation': TaskType.LOAD,
-     "task" : "some_dict",
-     "task_seq": 1,
+     "task" : "lowercase",
+     "depends_on": [],
      "source": "csv",
-     "task_params": {"path": "bbb/to/csv2"}
+     "task_params": {"key": "from_task_1"}
+     },
+     {'operation': TaskType.LOAD,
+     "task" : "lowercase",
+     "depends_on": [0,1],
+     "source": "csv",
+     "task_params": {"key": "from_task_2"}
      }]
 
 
@@ -23,18 +29,17 @@ workflow = Workflow()
 
 
 tasks = [TaskContext.get_task(config) for config in configs]
+for task in tasks:
+   
+     workflow.add_task(task)
 
-workflow.add_task(tasks[0])
-workflow.add_task(tasks[1])
 
-print(workflow.show_tasks())
-workflow.append_task(1,{"1":3 })
-workflow.append_task(9,{"1":4 })
-workflow.append_task(2,{"1":8 })
-workflow.append_task(5,{"1":10 })
-workflow.append_task(8,{"1":100 })
-a = workflow.get_workflow_bulk_plan()
-print(a.keys())
+workflow.execute_workflow()
+
+
+
+#workflow.add_task(tasks[1])
+
 
 
 # od = dict(sorted(a.items(), key=lambda item: item[1]))

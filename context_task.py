@@ -1,21 +1,17 @@
 from enum import Enum
 from typing import Callable, Dict
 
-from task_state import TaskState
+import sys
+import time
+
+from task_state import NA, TaskState
+import itertools
 
 # from interface_data import DataLoadFactory
 # from interface_transformation import  DataTransformationFactory
 from abc import ABC, abstractmethod,abstractproperty
 
 from transformations.dataframe_transformations import DayaframeTransformation
-
-
-# class TaskStatus(str, Enum):
-#     NA = "Na"
-#     STARTED = "Started"
-#     COMPLETED = "Complepted"
-#     CANCELED = "Canceled"
-
 
 
 class TaskType(str, Enum):
@@ -26,73 +22,65 @@ class TaskType(str, Enum):
 class TaskFactory(ABC):
 
     def __init__(self, config: Dict):
-        self.task = config.get('task')
-        self.last_name = config.get('task_params')
-
-    @abstractmethod
-    def execute_task(self):
-        pass
-
-    #    return getattr(DayaframeTransformation, self.task)(self.task_params)
-       # return f"{self.first_name} {self.last_name}"
+        self.task = None
+        self.task_id = None
+        self.depends_on = None
+        self.task_params = None
+        self.task_state = None
+        self.task_seq = None
 
     @abstractmethod
     def get_task(self):
         pass
- 
+
+    @abstractmethod
+    def get_task_id(self):
+        pass
+
+
     # @abstractmethod
-    # def construct_task(self,config: Dict) -> "Task":
-    #     self.task = config.get('task')
+    # def execute_task(self):
+    #     pass
 
 
 
-
-class DataLoadFactory(TaskFactory):
+class DataLoadFactory(TaskFactory,TaskState):
 
     "The DataLoad Factory Class"
+    newid = itertools.count()
 
     def __init__(self, config: Dict):
         self.task = config.get('task')
+        self.task_id = next(DataLoadFactory.newid)
+        self.depends_on = config.get('depends_on')
         self.task_params = config.get('task_params')
+        self.task_state = NA()
         self.task_seq = config.get('task_seq')
 
     def get_task(self):
         return self.task
     
-    def execute_task(self) -> Callable :
-        return getattr(DayaframeTransformation, self.task)(self.task_params)
+    def get_task_id(self):
+        return self.task_id
+
+    def set_state(self, state: str ):
+        self.task_state.switch(getattr(sys.modules['task_state'], state))
+    
+    def get_state(self):
+        return self.task_state.name
+        #self.task_state = getattr(sys.modules['task_state'], state)
+    
+    
+    # def execute_task(self) -> Callable :
+    #     return getattr(DayaframeTransformation, self.task)(self.task_params)
 
 
 
 class DataTransformationFactory(TaskFactory):
     "The DataLoad Factory Class"
 
-def append_value(dict_obj, key, value):
-    # Check if key exist in dict or not
-    if key in dict_obj:
-        # Key exist in dict.
-        # Check if type of value of key is list or not
-        if not isinstance(dict_obj[key], list):
-            # If type is not list then make it list
-            dict_obj[key] = [dict_obj[key]]
-        # Append the value in list
-        dict_obj[key].append(value)
-    else:
-        # As key is not in dict,
-        # so, add key-value pair
-        dict_obj[key] = value
-# Dictionary of strings and ints
-word_freq = {1: {"some": 12},2: {"some": 12},3: {"some": 12}
-}
 
-append_value(word_freq, 1, {"some": 1222})
-print(word_freq)
 
-class TaskBulk:
-    task_start = 0
-
-    def __init__(self):
-        self.task_seq = []
  
 
 
@@ -108,23 +96,66 @@ class Workflow:
     def show_tasks(self):
         return [task.get_task() for task in self.tasks]
 
-    def append_task(self,key, value):
-        if key in self.workflow_task_bulk:
-            # Key exist in dict.
-            # Check if type of value of key is list or not
-            if not isinstance(self.workflow_task_bulk[key], list):
-                # If type is not list then make it list
-                self.workflow_task_bulk[key] = [self.workflow_task_bulk[key]]
-            # Append the value in list
-            self.workflow_task_bulk[key].append(value)
+    def execute_task(self, task):
+        # if this task also depended
+        if task.depends_on :
+            # check requied tasks
+            self.required_task(task)
         else:
-            # As key is not in dict,
-            # so, add key-value pair
-            self.workflow_task_bulk[key] = value
-        print(self.workflow_task_bulk)
+            ##no dependedcy - can execute the task
+            print("executing task", task.task_id)
+          
+            self.tasks[task.task_id].set_state('Started')
+            
+            return_from_task = getattr(DayaframeTransformation, task.task)(**task.task_params)
+            self.tasks[task.task_id].set_state('Completed')
+            return return_from_task
     
-    def get_workflow_bulk_plan(self):
-        return self.workflow_task_bulk
+
+    def required_task(self,task):
+        # loop through all requied (parent) task ONLY for those which thier state remain na (wasn't executed)
+        for required_task_id in (required_task_id for required_task_id in task.depends_on
+                                           if self.tasks[required_task_id].get_state() == 'na'):
+            return self.tasks[required_task_id]
+        
+
+    def execute_workflow(self):
+        #iterating thrgouh each task - assumption all tasks started as na
+        
+        for task in (task for task in self.tasks if task.get_state() == 'na' ):
+            print("Main -> task_id:", task.task_id)
+            if task.depends_on :
+                
+                print("Depended task only -> task_id:", task.task_id ,"depands on", task.depends_on)
+          #      self.check_depended_task_are_completed(task)
+
+                #iterate on the required tasks id (list)
+                for required_task_id in task.depends_on:
+                    print("task requied in loop",self.tasks[required_task_id].task_id,"State",
+                    self.tasks[required_task_id].get_state())
+
+                    if self.tasks[required_task_id].get_state() == 'completed':
+                        continue
+                    #Try to execute the parent task
+                    else:
+                        print("task ",self.tasks[required_task_id].task_id,"State",
+                    self.tasks[required_task_id].get_state())
+                        self.execute_task(self.tasks[required_task_id])
+          
+            self.execute_task(task)
+                    
+    # def check_depended_task_are_completed(self,task):
+    #     sleepless = True
+    #     while (sleepless):
+    #         for required_task_id in task.depends_on :
+    #             if self.tasks[required_task_id].get_state() in ('completed','failed'):
+    #                 sleepless = False
+    #                 break
+    #             else:
+    #                 sleepless = False
+    #             time.sleep(2)
+
+
 
 class TaskContext:
     available_factories = {
