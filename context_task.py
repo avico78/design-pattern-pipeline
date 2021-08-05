@@ -18,13 +18,13 @@ class TaskType(str, Enum):
 
 class TaskFactory(ABC):
 
-    def __init__(self, config: Dict):
-        self.task = None
-        self.task_id = None
-        self.depends_on = None
-        self.task_params = None
-        self.task_state = None
-        self.task_seq = None
+    # def __init__(self, config: Dict):
+    #     self.task = None
+    #     self.task_id = None
+    #     self.depends_on = None
+    #     self.task_params = None
+    #     self.task_state = None
+    #     self.task_seq = None
 
     @abstractmethod
     def get_task(self):
