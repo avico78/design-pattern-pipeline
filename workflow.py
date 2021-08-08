@@ -6,7 +6,7 @@ from task import Task
 
 
 class Workflow:
-    workflow_task_bulk = {}
+    #workflow_task_bulk = {}
 
     def __init__(self, id: int):
         self.id = id
